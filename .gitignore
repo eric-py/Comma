@@ -166,4 +166,5 @@ cython_debug/
 **/static/css
 comma.sqlite3
 media
-comma/**/migrations/
+comma/**/migrations/*
+!comma/**/migrations/__init__.py

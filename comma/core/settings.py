@@ -46,6 +46,8 @@ INSTALLED_APPS = [
 
     # created apps
     'account.apps.AccountConfig',
+
+    'widget_tweaks'
 ]
 
 MIDDLEWARE = [
@@ -152,3 +154,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Account
 AUTH_USER_MODEL = 'account.User'
+LOGIN_URL = 'account:login'
+LOGOUT_REDIRECT_URL = 'account:login'
+LOGIN_REDIRECT_URL = '/admin/'
