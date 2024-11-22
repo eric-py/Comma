@@ -19,9 +19,12 @@ def validate_image(image):
 def user_directory_path(instance, filename):
     if hasattr(instance, 'username'):
         folder = 'profile_pics'
+        user_id = instance.id
     else:
-        folder = 'posts'    
+        folder = 'posts'
+        user_id = instance.user.id if instance.user else 'unknown'
+    
     random_string = uuid.uuid4().hex[:8]
     name, extension = filename.rsplit('.', 1)
     new_filename = f"{name}_{random_string}.{extension}"
-    return f'user_{instance.id}/{folder}/{new_filename}'
+    return f'user_{user_id}/{folder}/{new_filename}'
