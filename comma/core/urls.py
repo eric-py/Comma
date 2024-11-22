@@ -25,6 +25,9 @@ urlpatterns = [
     # Account
     path('account/', include('account.urls')),
 
+    # Posts
+    path('', include('posts.urls')),
+
     # Tailwind
     path("__reload__/", include("django_browser_reload.urls")),
 ]

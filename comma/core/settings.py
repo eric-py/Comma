@@ -46,8 +46,10 @@ INSTALLED_APPS = [
 
     # created apps
     'account.apps.AccountConfig',
+    'posts.apps.PostsConfig',
 
-    'widget_tweaks'
+    # Install apps
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -156,4 +158,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 AUTH_USER_MODEL = 'account.User'
 LOGIN_URL = 'account:login'
 LOGOUT_REDIRECT_URL = 'account:login'
-LOGIN_REDIRECT_URL = '/admin/'
+LOGIN_REDIRECT_URL = 'posts:home'

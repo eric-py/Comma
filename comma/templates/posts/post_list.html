@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+
+    {% include 'partials/header.html' %}
+
+    <main class="container mx-auto px-4 py-8 mt-16 flex-grow">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pb-8">
+            {% for post in posts %}
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                    <a href="#">
+                        <div class="p-4 flex items-center">
+                           <img src="{% if post.user.profile_pics %}{{ post.user.profile_pics.url }}{% else %}https://via.placeholder.com/40{% endif %}" alt="تصویر پروفایل" class="w-10 h-10 rounded-full mx-1">
+                           <span class="font-semibold">{{ post.user.username }}</span>
+                        </div>
+                    </a>
+                    <img src="{{ post.image.url }}" alt="تصویر پست" class="w-full open-modal" data-target="postModal">
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex gap-4">
+                                <button class="like-button text-2xl text-gray-700 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400" data-post-id="{{ post.id }}">
+                                    <i class="{% if post.is_liked %}fas text-pink-500{% else %}far{% endif %} fa-heart"></i>
+                                </button>
+                                <button class="text-2xl text-gray-700 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400 open-modal" data-target="postModal">
+                                    <i class="far fa-comment"></i>
+                                </button>
+                                <button class="text-2xl text-gray-700 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400 send-button">
+                                    <i class="far fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <button class="save-button text-2xl text-gray-700 dark:text-gray-300 hover:text-cyan-500 dark:hover:text-cyan-500">
+                                <i class="{% if post.is_saved %}fas text-cyan-400{% else %}far{% endif %} fa-bookmark"></i>
+                            </button>
+                        </div>
+                        <p class="font-semibold mb-2"><span class="likes-count">{{ post.likes.count }}</span> لایک</p>
+                        <p><a href="#"><span class="font-semibold">{{ post.user.username }}</span></a> {{ post.caption|truncatewords:15 }}</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ post.jcreated_at }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-center col-span-3">هیچ پستی وجود ندارد.</p>
+            {% endfor %}
+        </div>
+    </main>
+
+    {% include 'partials/mobileMenu.html' %}
+    {% include 'partials/postModal.html' %}
+    {% include 'partials/sendModal.html' %}
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/index.js' %}"></script>
+    <script src="{% static 'js/like.js' %}"></script>
+    <script src="{% static 'js/save.js' %}"></script>
+{% endblock %}
