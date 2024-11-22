@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'django_browser_reload',
+
+    # created apps
+    'account.apps.AccountConfig',
 ]
 
 MIDDLEWARE = [
@@ -146,3 +149,6 @@ TAILWIND_CSS_PATH = 'css/styles.css'
 # Media
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Account
+AUTH_USER_MODEL = 'account.User'
