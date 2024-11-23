@@ -1,13 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.views import LoginView
-from django.views.generic import CreateView, DetailView, View
+from django.views.generic import CreateView, DetailView, View, UpdateView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import UserConnection, FollowRequest
 from .mixins import AnonymousRequiredMixin
 
@@ -84,3 +84,18 @@ class FollowToggleView(LoginRequiredMixin, View):
             else:
                 UserConnection.objects.create(follower=user, following=user_to_follow)
                 return JsonResponse({'status': 'success', 'action': 'followed'})
+
+class ProfileEditView(LoginRequiredMixin, UpdateView):
+    model = User
+    slug_field = 'username'
+    slug_url_kwarg = 'username'
+    form_class = CustomUserChangeForm
+    
+    def get_success_url(self):
+        return reverse('account:profile', kwargs={'username': self.object.username})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Comma | ویرایش پروفایل'
+        context['active'] = 'profile'
+        return context

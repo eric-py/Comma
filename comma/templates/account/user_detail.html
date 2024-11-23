@@ -40,7 +40,7 @@
                                 {% endif %}
                             </button>
                         {% else %}
-                            <a href="" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
+                            <a href="{% url 'account:profile_edit' username=profile_user %}" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
                                 ویرایش پروفایل
                             </a>
                         {% endif %}
