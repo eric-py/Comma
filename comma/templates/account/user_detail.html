@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    {% include 'partials/header.html' %}
+    
+    <main class="flex-grow container mx-auto px-4 mt-10 py-8 pb-20">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div class="flex flex-col items-center md:flex-row md:items-start mb-6 gap-5">
+                <img src="{% if profile_user.profile_pics %}{{ profile_user.profile_pics.url }}{% else %}https://via.placeholder.com/150{% endif %}" alt="تصویر پروفایل" class="w-32 h-32 rounded-full mb-4 md:mb-0 md:mr-6">
+                <div class="w-full">
+                    <div class="flex flex-col md:flex-row justify-between items-center md:items-start">
+                        <div class="text-center md:text-right mb-4 md:mb-0">
+                            <h2 class="text-2xl font-bold mb-2">{{ profile_user.username }}</h2>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">{{ profile_user.bio|default:"بیوگرافی تنظیم نشده است." }}</p>
+                            {% with post_count=profile_user.posts.count followers_count=profile_user.followers.count following_count=profile_user.following.count %}
+                                <div class="flex gap-4 mb-4 justify-center md:justify-start">
+                                    <span><strong>{{ post_count }}</strong> پست</span>
+                                    <span><strong>{{ followers_count }}</strong> دنبال‌کننده</span>
+                                    <span><strong>{{ following_count }}</strong> دنبال شونده</span>
+                                </div>
+                            {% endwith %}
+                        </div>
+                        {% if request.user != profile_user %}
+                            <button id="followButton" 
+                                    data-username="{{ profile_user.username }}"
+                                    class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
+                                {% if is_following %}
+                                    آنفالو کردن
+                                {% elif is_requested %}
+                                    لغو درخواست
+                                {% elif profile_user.is_private %}
+                                    درخواست فالو
+                                {% else %}
+                                    فالو کردن
+                                {% endif %}
+                            </button>
+                        {% else %}
+                            <a href="" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
+                                ویرایش پروفایل
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if user == profile_user or not profile_user.is_private %}
+            <div class="mt-8">
+                {% if user == profile_user %}
+                    <div class="flex justify-center mb-4">
+                        <button id="showPosts" class="bg-pink-500 text-white font-bold py-2 px-4 rounded-r focus:outline-none">
+                            پست‌ها
+                        </button>
+                        <button id="showSaved" class="bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-l focus:outline-none">
+                            ذخیره‌شده‌ها
+                        </button>
+                    </div>
+                {% endif %}
+                <div id="postsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {% for post in profile_user.posts.all %}
+                        <a href="">
+                            <img src="{{  post.image.url }}" alt="پست کاربر" class="w-full h-auto rounded">
+                        </a>
+                    {% endfor %}
+                </div>
+
+                {% if user == profile_user %}
+                    <div id="savedGrid" class="hidden grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {% for saved_post in saved_posts %}
+                            <a href="">
+                                <img src="{{ saved_post.image.url }}" alt="پست ذخیره شده" class="w-full h-auto rounded">
+                            </a>
+                        {% empty %}
+                            <p class="col-span-3 text-center text-gray-500 mt-10">هیچ پست ذخیره شده‌ای وجود ندارد.</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <p class="text-center text-gray-500 mt-10">حساب خصوصی است. برای مشاهده پست ها میتوانید این کاربر را دنبال کنید</p>
+        {% endif %}
+    </main>
+
+    {% include 'partials/mobileMenu.html' %}
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/profile.js' %}"></script>
+    <script src="{% static 'js/follow.js' %}"></script>
+{% endblock %}
