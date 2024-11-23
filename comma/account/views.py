@@ -9,6 +9,7 @@ from django.http import JsonResponse
 
 from .forms import CustomUserCreationForm
 from .models import UserConnection, FollowRequest
+from .mixins import AnonymousRequiredMixin
 
 from posts.models import SavedPost
 
@@ -16,7 +17,7 @@ User = get_user_model()
 
 # Create your views here.
 
-class UserLoginView(LoginView):
+class UserLoginView(AnonymousRequiredMixin, LoginView):
     template_name = 'account/auth.html'
     form_class = AuthenticationForm
 
@@ -26,7 +27,7 @@ class UserLoginView(LoginView):
         context['active'] = 'login'
         return context
 
-class UserRegisterView(CreateView):
+class UserRegisterView(AnonymousRequiredMixin, CreateView):
     model = User
     form_class = CustomUserCreationForm
     template_name = 'account/auth.html'
