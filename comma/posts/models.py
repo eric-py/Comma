@@ -13,6 +13,21 @@ class PostManager(models.Manager):
             Q(user=user) | Q(user__in=user.following.values('following'))
         ).distinct().order_by('-created_at')
 
+class SavedPostManager(models.Manager):
+    def saved_posts(self, user):
+        saved_posts = self.filter(user=user)
+        visible_posts = []
+        
+        for saved_post in saved_posts:
+            post_owner = saved_post.post.user
+            if post_owner == user:
+                visible_posts.append(saved_post.post)
+            elif not post_owner.is_private:
+                visible_posts.append(saved_post.post)
+            elif user.following.filter(following=post_owner).exists():
+                visible_posts.append(saved_post.post)
+        
+        return Post.objects.filter(id__in=[post.id for post in visible_posts]).order_by('-created_at')
 # Create your models here.
 class Post(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts', verbose_name='کاربر')
@@ -92,11 +107,14 @@ class SavedPost(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='کاربر')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='saves', verbose_name='ذخیره‌ها')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='ذخیره شده در')
+
+    objects = SavedPostManager()
     
     class Meta:
         verbose_name = 'ذخیره'
         verbose_name_plural = 'ذخیره‌ شده‌ها'
         unique_together = ('user', 'post')
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"ذخیره توسط {self.user.username} در {self.jcreated_at()}"
