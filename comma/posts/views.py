@@ -7,7 +7,7 @@ from django.urls import reverse_lazy, reverse
 from .models import Post, Like, SavedPost
 from .forms import PostForm
 
-from extensions.mixins import UserSpecificActionMixin
+from extensions.mixins import UserSpecificActionMixin, PostVisibilityMixin
 
 # Create your views here.
 class PostListView(LoginRequiredMixin, ListView):
@@ -70,7 +70,7 @@ class CreatePostView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-class PostDetailView(LoginRequiredMixin, DetailView):
+class PostDetailView(LoginRequiredMixin, PostVisibilityMixin, DetailView):
     model = Post
     context_object_name = 'post'
 

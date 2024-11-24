@@ -1,7 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
+
+from posts.models import Post
 
 class UserSpecificActionMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
@@ -25,3 +27,19 @@ class AnonymousRequiredMixin(UserPassesTestMixin):
 
     def handle_no_permission(self):
         return redirect('posts:home')
+
+class PostVisibilityMixin(UserPassesTestMixin):
+    def test_func(self):
+        post = get_object_or_404(Post, pk=self.kwargs.get('pk'))
+        user = self.request.user
+        
+        if post.user == user:
+            return True
+        
+        if not post.user.is_private:
+            return True
+        
+        if post.user.followers.filter(follower=user).exists():
+            return True
+        
+        return False
