@@ -3,11 +3,15 @@ from django.views.generic import ListView, View, CreateView, DetailView, DeleteV
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.urls import reverse_lazy, reverse
+from django.db.models import Q
+from django.contrib.auth import get_user_model
 
 from .models import Post, Like, SavedPost
 from .forms import PostForm
 
 from extensions.mixins import UserSpecificActionMixin, PostVisibilityMixin
+
+User = get_user_model()
 
 # Create your views here.
 class PostListView(LoginRequiredMixin, ListView):
@@ -98,4 +102,37 @@ class PostEditView(UserSpecificActionMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Comma | ویرایش پست'
         context['active'] = 'edit'
+        return context
+
+class SearchView(ListView):
+    template_name = 'posts/post_search.html'
+    context_object_name = 'results'
+    paginate_by = 10
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        if query:
+            users = User.objects.filter(
+                Q(username__icontains=query) |
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query)
+            )
+            posts = Post.objects.filter(
+                Q(caption__icontains=query)
+            )
+            results = list(users) + list(posts)
+            return results
+        return []
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get('q', '')
+        context['query'] = query
+        context['title'] = 'Comma | جستجو'
+        context['active'] ='search'
+        
+        # Separate users and posts for the template
+        context['users'] = [item for item in context['results'] if isinstance(item, User)]
+        context['posts'] = [item for item in context['results'] if isinstance(item, Post)]
+        
         return context

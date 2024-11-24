@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    {% include 'partials/header.html' %}
+
+    <main class="container mx-auto px-4 py-8 mt-16 flex-grow">
+        <div class="max-w-2xl mx-auto">
+            <form method="GET" action="{% url 'posts:search' %}" class="mb-6">
+                <input type="text" name="q" placeholder="جستجو..." value="{{ query }}"
+                       class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400">
+            </form>
+            
+            {% if query %}
+                <div class="space-y-4">
+                    
+                    {% if users %}
+                        <h3 class="text-lg font-semibold mb-2">کاربران</h3>
+                        {% for user in users %}
+                            <a href="{% url 'account:profile' username=user.username %}">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex items-center">
+                                    <img src="{% if user.profile_pics %}{{ user.profile_pics.url }}{% else %}https://via.placeholder.com/50{% endif %}" 
+                                        alt="تصویر پروفایل" class="w-12 h-12 rounded-full mx-4">
+                                    <div>
+                                        <h3 class="font-semibold">{{ user.username }}</h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ user.get_full_name }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% if posts %}
+                        <h3 class="text-lg font-semibold mb-2">پست‌ها</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for post in posts %}
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                                    <a href="{% url 'account:profile' username=post.user.username %}">
+                                        <div class="p-4 flex items-center">
+                                            <img src="{% if post.user.profile_pics %}{{ post.user.profile_pics.url }}{% else %}https://via.placeholder.com/40{% endif %}" 
+                                                alt="تصویر پروفایل" class="w-10 h-10 rounded-full mr-2">
+                                            <span class="font-semibold mr-2">{{ post.user.username }}</span>
+                                        </div>
+                                    </a>
+                                    <a href="{% url 'posts:post_detail' pk=post.id %}">
+                                        <img src="{{ post.image.url }}" alt="تصویر پست" class="w-full">
+                                    </a>
+                                    <div class="p-4">
+                                        <p>
+                                            <a href="{% url 'account:profile' username=post.user.username %}">
+                                                <span class="font-semibold">{{ post.user.username }}</span>
+                                            </a>
+                                            {{ post.caption }}
+                                        </p>
+                                        <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ post.jcreated_at }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if not users and not posts %}
+                        <p class="text-center text-gray-500 mt-10">هیچ نتیجه‌ای یافت نشد.</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="text-center text-gray-500 mt-10">لطفاً عبارتی را برای جستجو وارد کنید.</p>
+            {% endif %}
+        </div>
+    </main>
+
+    {% include 'partials/mobileMenu.html' %}
+{% endblock %}
