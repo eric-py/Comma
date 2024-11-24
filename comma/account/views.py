@@ -9,9 +9,10 @@ from django.http import JsonResponse
 
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import UserConnection, FollowRequest
-from .mixins import AnonymousRequiredMixin
 
 from posts.models import SavedPost
+
+from extensions.mixins import UserSpecificActionMixin, AnonymousRequiredMixin
 
 User = get_user_model()
 
@@ -85,7 +86,7 @@ class FollowToggleView(LoginRequiredMixin, View):
                 UserConnection.objects.create(follower=user, following=user_to_follow)
                 return JsonResponse({'status': 'success', 'action': 'followed'})
 
-class ProfileEditView(LoginRequiredMixin, UpdateView):
+class ProfileEditView(UserSpecificActionMixin, UpdateView):
     model = User
     slug_field = 'username'
     slug_url_kwarg = 'username'
