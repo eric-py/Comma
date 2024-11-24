@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.views.generic import ListView, View, CreateView, DetailView, DeleteView
+from django.views.generic import ListView, View, CreateView, DetailView, DeleteView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.urls import reverse_lazy, reverse
@@ -88,3 +88,14 @@ class PostDeleteView(UserSpecificActionMixin, DeleteView):
     
     def get_success_url(self):
         return reverse('account:profile', kwargs={'username': self.request.user.username})
+
+class PostEditView(UserSpecificActionMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    success_url = reverse_lazy('posts:home')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Comma | ویرایش پست'
+        context['active'] = 'edit'
+        return context
