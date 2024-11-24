@@ -1,11 +1,13 @@
 from django.shortcuts import render
-from django.views.generic import ListView, View, CreateView
+from django.views.generic import ListView, View, CreateView, DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 from .models import Post, Like, SavedPost
 from .forms import PostForm
+
+from extensions.mixins import UserSpecificActionMixin
 
 # Create your views here.
 class PostListView(LoginRequiredMixin, ListView):
@@ -68,3 +70,21 @@ class CreatePostView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
+class PostDetailView(LoginRequiredMixin, DetailView):
+    model = Post
+    context_object_name = 'post'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = self.object
+        context['title'] = "Comma | نمایش پست"
+        context['active'] = 'home'
+        context['is_liked'] = post.likes.filter(user=self.request.user).exists()
+        context['is_saved'] = SavedPost.objects.filter(user=self.request.user, post=post).exists()
+        return context
+
+class PostDeleteView(UserSpecificActionMixin, DeleteView):
+    model = Post
+    
+    def get_success_url(self):
+        return reverse('account:profile', kwargs={'username': self.request.user.username})

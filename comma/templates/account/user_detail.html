@@ -62,7 +62,7 @@
                 {% endif %}
                 <div id="postsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {% for post in profile_user.posts.all %}
-                        <a href="">
+                        <a href="{% url 'posts:post_detail' pk=post.id %}">
                             <img src="{{  post.image.url }}" alt="پست کاربر" class="w-full h-auto rounded">
                         </a>
                     {% endfor %}
@@ -71,7 +71,7 @@
                 {% if user == profile_user %}
                     <div id="savedGrid" class="hidden grid grid-cols-2 md:grid-cols-3 gap-4">
                         {% for saved_post in saved_posts %}
-                            <a href="">
+                            <a href="{% url 'posts:post_detail' pk=saved_post.id %}">
                                 <img src="{{ saved_post.image.url }}" alt="پست ذخیره شده" class="w-full h-auto rounded">
                             </a>
                         {% empty %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+
+    {% include 'partials/header.html' %}
+
+    <main class="container mx-auto px-4 py-8 mt-10 flex-grow">
+        <div class="bg-white dark:bg-gray-800 rounded-lg pb-9 shadow-md overflow-hidden max-w-xl lg:max-w-md mx-auto">
+            <div class="p-4 flex items-center justify-between border-b border-gray-300 dark:border-gray-700">
+                <div class="flex items-center">
+                    <img src="{% if post.user.profile_pics %}{{ post.user.profile_pics.url }}{% else %}https://via.placeholder.com/32{% endif %}" alt="تصویر پروفایل" class="w-8 h-8 rounded-full mx-1">
+                    <a href="{% url 'account:profile' username=post.user.username %}">
+                        <span class="font-semibold text-sm">{{ post.user.username }}</span>
+                    </a>
+                </div>
+                {% if user.username == post.user.username %}
+                    <div class="relative">
+                        <button id="postOptionsButton" class="text-xl text-gray-700 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                            <div id="postOptions" class="hidden absolute left-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-md z-10">
+                                <a href="" class="block w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">ویرایش</a>
+                                <form action="{% url 'posts:post_delete' pk=post.id %}" method="post" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="block w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500 text-sm">حذف</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+            </div>
+            <div>
+                <img src="{{ post.image.url }}" alt="تصویر پست" class="w-full">
+            </div>
+            <div class="p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex gap-4">
+                        <button class="like-button text-2xl text-gray-700 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400" data-post-id="{{ post.id }}">
+                            <i class="{% if is_liked %}fas text-pink-500{% else %}far{% endif %} fa-heart"></i>
+                        </button>
+                        <button class="text-2xl text-gray-700 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400 send-button">
+                            <i class="far fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <button class="save-button text-2xl text-gray-700 dark:text-gray-300 hover:text-cyan-500 dark:hover:text-cyan-500">
+                        <i class="{% if is_saved %}fas text-cyan-400{% else %}far{% endif %} fa-bookmark"></i>
+                    </button>
+                </div>
+                <p class="font-semibold mb-2"><span class="likes-count">{{ post.likes.count }}</span> لایک</p>
+                <p><a href="{% url 'account:profile' username=post.user.username %}">
+                    <span class="font-semibold">{{ post.user.username }}:</span>
+                </a> {{ post.caption }}</p>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ post.jcreated_at }}</p>
+                <div class="pt-5 border-t border-gray-300 dark:border-gray-700">
+                    <form class="flex items-center" id="commentForm" data-post-id="{{ post.id }}">
+                        {% csrf_token %}
+                        <input type="text" name="content" placeholder="نظر خود را بنویسید..." class="flex-grow p-2 rounded-r-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-sm">
+                        <button type="submit" class="ml-2 px-4 py-2 bg-pink-500 text-white rounded-l-lg text-sm">ارسال</button>
+                    </form>
+                </div>
+            </div>
+            <div class="p-4">
+                <h3 class="font-semibold mb-4 text-sm">نظرات:</h3>
+                <div id="commentsList" class="space-y-4">
+                    {% for comment in post.comments.all %}
+                        <div>
+                            <p class="text-sm"><span class="font-semibold">{{ comment.user.username }}:</span> {{ comment.content }}</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">{{ comment.jcreated_at }}</p>
+                        </div>
+                    {% empty %}
+                        <p class="text-sm text-gray-500">هنوز نظری ثبت نشده است.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {% include 'partials/mobileMenu.html' %}
+    {% include 'partials/sendModal.html' %}
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/post.js' %}"></script>
+    <script src="{% static 'js/save.js' %}"></script>
+    <script src="{% static 'js/like.js' %}"></script>
+{% endblock %}

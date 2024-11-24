@@ -13,7 +13,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pb-8">
             {% for post in posts %}
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                    <a href="#">
+                    <a href="{% url 'account:profile' username=post.user.username %}">
                         <div class="p-4 flex items-center">
                            <img src="{% if post.user.profile_pics %}{{ post.user.profile_pics.url }}{% else %}https://via.placeholder.com/40{% endif %}" alt="تصویر پروفایل" class="w-10 h-10 rounded-full mx-1">
                            <span class="font-semibold">{{ post.user.username }}</span>
@@ -38,7 +38,7 @@
                             </button>
                         </div>
                         <p class="font-semibold mb-2"><span class="likes-count">{{ post.likes.count }}</span> لایک</p>
-                        <p><a href="#"><span class="font-semibold">{{ post.user.username }}</span></a> {{ post.caption|truncatewords:15 }}</p>
+                        <p><a href="{% url 'account:profile' username=post.user.username %}"><span class="font-semibold">{{ post.user.username }}</span></a> {{ post.caption|truncatewords:15 }}</p>
                         <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ post.jcreated_at }}</p>
                     </div>
                 </div>
