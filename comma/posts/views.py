@@ -88,7 +88,7 @@ class PostDetailView(LoginRequiredMixin, PostVisibilityMixin, DetailView):
         context['active'] = 'home'
         context['is_liked'] = post.likes.filter(user=self.request.user).exists()
         context['is_saved'] = SavedPost.objects.filter(user=self.request.user, post=post).exists()
-        context['comments'] = post.comments.filter(parent=None)
+        context['comments'] = post.comments.get_comments()
         return context
 
 class PostDeleteView(UserSpecificActionMixin, DeleteView):

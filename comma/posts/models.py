@@ -29,6 +29,10 @@ class SavedPostManager(models.Manager):
         
         return Post.objects.filter(id__in=[post.id for post in visible_posts]).order_by('-created_at')
 
+class CommentManager(models.Manager):
+    def get_comments(self):
+        return self.filter(parent=None)
+
 # Create your models here.
 class Post(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts', verbose_name='کاربر')
@@ -112,6 +116,8 @@ class Comment(models.Model):
     text = models.TextField(verbose_name='متن کامنت', max_length=200)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='ایجاد شده در')
     likes = models.ManyToManyField(settings.AUTH_USER_MODEL, through='CommentLike', related_name='liked_comments', verbose_name='لایک‌ها')
+
+    objects = CommentManager()
 
     class Meta:
         verbose_name = 'کامنت'

@@ -1,32 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('postModal');
-    const closeModal = document.getElementById('closeModal');
-    const openModalButtons = document.querySelectorAll('.open-modal');
-
-    openModalButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = this.getAttribute('data-target');
-            const targetModal = document.getElementById(target);
-            if (targetModal) {
-                targetModal.classList.remove('hidden');
-                targetModal.classList.add('flex');
-            }
-        });
-    });
-
-    closeModal.addEventListener('click', function() {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    });
-
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-    });
-
     const sendModal = document.getElementById('sendModal');
     const closeSendModal = document.getElementById('closeSendModal');
     const sendButtons = document.querySelectorAll('.send-button');
