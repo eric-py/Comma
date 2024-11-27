@@ -5,11 +5,14 @@ from django.http import JsonResponse
 from django.urls import reverse_lazy, reverse
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
-from .models import Post, Like, SavedPost
+from .models import Post, Like, SavedPost, Comment
 from .forms import PostForm
 
 from extensions.mixins import UserSpecificActionMixin, PostVisibilityMixin
+from extensions.utils import create_comment_or_reply
 
 User = get_user_model()
 
@@ -85,6 +88,7 @@ class PostDetailView(LoginRequiredMixin, PostVisibilityMixin, DetailView):
         context['active'] = 'home'
         context['is_liked'] = post.likes.filter(user=self.request.user).exists()
         context['is_saved'] = SavedPost.objects.filter(user=self.request.user, post=post).exists()
+        context['comments'] = post.comments.filter(parent=None)
         return context
 
 class PostDeleteView(UserSpecificActionMixin, DeleteView):
@@ -104,7 +108,7 @@ class PostEditView(UserSpecificActionMixin, UpdateView):
         context['active'] = 'edit'
         return context
 
-class SearchView(ListView):
+class SearchView(LoginRequiredMixin, ListView):
     template_name = 'posts/post_search.html'
     context_object_name = 'results'
     paginate_by = 10
@@ -136,3 +140,66 @@ class SearchView(ListView):
         context['posts'] = [item for item in context['results'] if isinstance(item, Post)]
         
         return context
+
+class AddCommentView(LoginRequiredMixin, View):
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        content = request.POST.get('content')
+        
+        if not content:
+            return JsonResponse({'status': 'error', 'message': 'داده‌های نامعتبر'})
+        
+        try:
+            comment = create_comment_or_reply(post, request.user, content)
+        except ValidationError as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+        
+        return JsonResponse({
+            'status': 'success',
+            'username': comment.user.username,
+            'user_profile_pic': comment.user.profile_pics.url if comment.user.profile_pics else '',
+            'text': comment.text,
+            'created_at': comment.jcreated_at()
+        })
+
+class AddReplyView(LoginRequiredMixin, View):
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        parent_id = request.POST.get('parent_id')
+        content = request.POST.get('content')
+
+        if not (parent_id and content):
+            return JsonResponse({'status': 'error', 'message': 'داده‌های نامعتبر'})
+
+        parent_comment = get_object_or_404(Comment, id=parent_id)
+        
+        try:
+            reply = create_comment_or_reply(post, request.user, content, parent_comment)
+        except ValidationError as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+        
+        return JsonResponse({
+            'status': 'success',
+            'username': reply.user.username,
+            'user_profile_pic': reply.user.profile_pics.url if reply.user.profile_pics else '',
+            'text': reply.text,
+            'created_at': reply.jcreated_at()
+        })
+
+class LikeCommentView(LoginRequiredMixin, View):
+    def post(self, request, comment_id):
+        comment = get_object_or_404(Comment, id=comment_id)
+        user = request.user
+
+        if user in comment.likes.all():
+            comment.likes.remove(user)
+            liked = False
+        else:
+            comment.likes.add(user)
+            liked = True
+
+        return JsonResponse({
+            'status': 'success',
+            'liked': liked,
+            'likes_count': comment.like_count()
+        })

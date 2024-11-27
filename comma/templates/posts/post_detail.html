@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static tags %}
 
 {% block title %}
     {{ title }}
@@ -25,14 +25,14 @@
                         </button>
                             <div id="postOptions" class="hidden absolute left-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-md z-10">
                                 <a href="{% url 'posts:post_edit' pk=post.id %}" class="block w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">ویرایش</a>
-                                <form action="{% url 'posts:post_delete' pk=post.id %}" method="post" class="inline">
+                                <form id="deletePostForm" action="{% url 'posts:post_delete' pk=post.id %}" method="post" class="inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="block w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500 text-sm">حذف</button>
+                                    <button type="button" id="deletePostBtn" onclick="if(confirm('آیا مطمئن هستید که می‌خواهید این پست را حذف کنید؟')) document.getElementById('deletePostForm').submit();" class="block w-full text-right px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500 text-sm">حذف</button>
                                 </form>
                             </div>
                         </div>
                     {% endif %}
-            </div>
+                </div>
             <div>
                 <img src="{{ post.image.url }}" alt="تصویر پست" class="w-full">
             </div>
@@ -55,26 +55,11 @@
                     <span class="font-semibold">{{ post.user.username }}:</span>
                 </a> {{ post.caption }}</p>
                 <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">{{ post.jcreated_at }}</p>
-                <div class="pt-5 border-t border-gray-300 dark:border-gray-700">
-                    <form class="flex items-center" id="commentForm" data-post-id="{{ post.id }}">
-                        {% csrf_token %}
-                        <input type="text" name="content" placeholder="نظر خود را بنویسید..." class="flex-grow p-2 rounded-r-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-sm">
-                        <button type="submit" class="ml-2 px-4 py-2 bg-pink-500 text-white rounded-l-lg text-sm">ارسال</button>
-                    </form>
-                </div>
             </div>
             <div class="p-4">
-                <h3 class="font-semibold mb-4 text-sm">نظرات:</h3>
-                <div id="commentsList" class="space-y-4">
-                    {% for comment in post.comments.all %}
-                        <div>
-                            <p class="text-sm"><span class="font-semibold">{{ comment.user.username }}:</span> {{ comment.content }}</p>
-                            <p class="text-gray-500 dark:text-gray-400 text-xs">{{ comment.jcreated_at }}</p>
-                        </div>
-                    {% empty %}
-                        <p class="text-sm text-gray-500">هنوز نظری ثبت نشده است.</p>
-                    {% endfor %}
-                </div>
+                
+                {% render_comment_section comments %}
+
             </div>
         </div>
     </main>
@@ -85,7 +70,13 @@
 {% endblock %}
 
 {% block script %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{% static 'js/post.js' %}"></script>
     <script src="{% static 'js/save.js' %}"></script>
     <script src="{% static 'js/like.js' %}"></script>
+    <script src="{% static 'js/comment.js' %}"></script>
+    <script>
+        const postId = '{{ post.id }}';
+        const csrfToken = '{{ csrf_token }}';
+    </script>
 {% endblock %}

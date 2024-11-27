@@ -28,6 +28,7 @@ class SavedPostManager(models.Manager):
                 visible_posts.append(saved_post.post)
         
         return Post.objects.filter(id__in=[post.id for post in visible_posts]).order_by('-created_at')
+
 # Create your models here.
 class Post(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts', verbose_name='کاربر')
@@ -84,25 +85,6 @@ class Like(models.Model):
         return convert_date_to_jalali(self.created_at, time=True)
     jcreated_at.short_description = 'ایجاد شده در'
 
-
-class Comment(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='کاربر')
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name='پست')
-    text = models.TextField(verbose_name='کامنت')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='ایجاد شده در')
-
-    class Meta:
-        verbose_name = 'کامنت'
-        verbose_name_plural = 'کامنت‌ها'
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f"کامنت توسط {self.user.username} در {self.jcreated_at()}"
-    
-    def jcreated_at(self):
-        return convert_date_to_jalali(self.created_at, time=True)
-    jcreated_at.short_description = 'ایجاد شده در'
-
 class SavedPost(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='کاربر')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='saves', verbose_name='ذخیره‌ها')
@@ -123,3 +105,54 @@ class SavedPost(models.Model):
         return convert_date_to_jalali(self.created_at, time=True)
     jcreated_at.short_description = 'ذخیره شده در'
     
+class Comment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='کاربر')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name='پست')
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies', verbose_name='کامنت والد')
+    text = models.TextField(verbose_name='متن کامنت', max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='ایجاد شده در')
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, through='CommentLike', related_name='liked_comments', verbose_name='لایک‌ها')
+
+    class Meta:
+        verbose_name = 'کامنت'
+        verbose_name_plural = 'کامنت‌ها'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        if self.parent:
+            return f"پاسخ به کامنت {self.parent.id} توسط {self.user.username} در {self.jcreated_at()}"
+        return f"کامنت توسط {self.user.username} در {self.jcreated_at()}"
+    
+    def jcreated_at(self):
+        return convert_date_to_jalali(self.created_at, time=True)
+    jcreated_at.short_description = 'ایجاد شده در'
+
+    @property
+    def is_reply(self):
+        return self.parent is not None
+
+    def get_replies(self):
+        return Comment.objects.filter(parent=self)
+
+    def like_count(self):
+        return self.likes.count()
+
+    def is_liked_by(self, user):
+        return self.likes.filter(id=user.id).exists()
+
+class CommentLike(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='کاربر')
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='comment_likes', verbose_name='کامنت')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='ایجاد شده در')
+
+    class Meta:
+        verbose_name = 'لایک کامنت'
+        verbose_name_plural = 'لایک‌های کامنت'
+        unique_together = ('user', 'comment')
+
+    def __str__(self):
+        return f"لایک کامنت توسط {self.user.username} در {self.jcreated_at()}"
+    
+    def jcreated_at(self):
+        return convert_date_to_jalali(self.created_at, time=True)
+    jcreated_at.short_description = 'ایجاد شده در'

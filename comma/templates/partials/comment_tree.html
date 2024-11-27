@@ -1,0 +1,45 @@
+{% load static %}
+
+{% for comment in comments %}
+    <div class="comment-container bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-4 {% if comment.parent %}mr-4{% endif %}">
+        <div class="flex items-start space-x-3 space-x-reverse">
+            <img src="{% if comment.user.profile_pics %}{{ comment.user.profile_pics.url }}{% else %}https://via.placeholder.com/32{% endif %}" alt="تصویر پروفایل" class="w-8 h-8 rounded-full">
+            <div class="flex-grow">
+                <div class="flex justify-between items-start">
+                    <p class="text-sm my-1">
+                        <a href="{% url 'account:profile' username=comment.user.username %}" class="font-semibold hover:underline">{{ comment.user.username }}</a>
+                        {% if comment.parent %}
+                            > <a href="{% url 'account:profile' username=comment.parent.user.username %}" class="font-semibold hover:underline">{{ comment.parent.user.username }}</a>
+                        {% endif %}
+                        {{ comment.text }}
+                    </p>
+                </div>
+                <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <div class="flex space-x-4 space-x-reverse">
+                        <button class="like-comment-btn hover:text-pink-500" data-comment-id="{{ comment.id }}">
+                            <i class="{% if user in comment.likes.all %}fas text-pink-500{% else %}far{% endif %} fa-heart"></i>
+                            <span class="comment-likes-count">{{ comment.like_count }}</span> لایک
+                        </button>
+                        <button class="reply-btn hover:text-blue-500" data-comment-id="{{ comment.id }}">پاسخ</button>
+                    </div>
+                    <p>{{ comment.jcreated_at }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="reply-form hidden mt-2" id="reply-form-{{ comment.id }}">
+            <form method="post" class="flex items-center" data-comment-id="{{ comment.id }}">
+                {% csrf_token %}
+                <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                <input type="text" name="content" placeholder="پاسخ خود را بنویسید..." class="flex-grow p-2 rounded-r-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-sm">
+                <button type="submit" class="ml-2 px-4 py-2 bg-pink-500 text-white rounded-l-lg text-sm">ارسال</button>
+            </form>
+        </div>
+    </div>
+
+    {% if comment.replies.exists %}
+        <div class="replies">
+            {% include "partials/comment_tree.html" with comments=comment.replies.all %}
+        </div>
+    {% endif %}
+{% endfor %}

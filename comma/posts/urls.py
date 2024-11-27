@@ -16,4 +16,8 @@ urlpatterns = [
 
     path('post/<int:post_id>/save/', views.SavePostView.as_view(), name='save'),
     path('post/<int:post_id>/like/', views.LikePostView.as_view(), name='like'),
+    
+    path('post/<int:post_id>/add_comment/', views.AddCommentView.as_view(), name='add_comment'),
+    path('post/<int:post_id>/add_reply/', views.AddReplyView.as_view(), name='add_reply'),
+    path('comment/<int:comment_id>/like/', views.LikeCommentView.as_view(), name='like_comment'),
 ]
