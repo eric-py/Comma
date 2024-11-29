@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.views import LoginView
-from django.views.generic import CreateView, DetailView, View, UpdateView
+from django.views.generic import CreateView, DetailView, View, UpdateView, ListView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from django.urls import reverse_lazy, reverse
@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 
 from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import UserConnection, FollowRequest
+from .models import UserConnection, FollowRequest, Activity
 
 from posts.models import SavedPost
 
@@ -77,13 +77,23 @@ class FollowToggleView(LoginRequiredMixin, View):
                 return JsonResponse({'status': 'success', 'action': 'unfollowed'})
             else:
                 FollowRequest.objects.create(from_user=user, to_user=user_to_follow)
-                return JsonResponse({'status': 'success', 'action': 'request_sent'})
+                Activity.create_activity(
+                    user=user_to_follow,
+                    activity_type='follow_request',
+                    actor=user
+                )
+                JsonResponse({'status': 'success', 'action': 'request_sent'})
         else:
             if connection:
                 connection.delete()
                 return JsonResponse({'status': 'success', 'action': 'unfollowed'})
             else:
                 UserConnection.objects.create(follower=user, following=user_to_follow)
+                Activity.create_activity(
+                    user=user_to_follow,
+                    activity_type='follow',
+                    actor=user
+                )
                 return JsonResponse({'status': 'success', 'action': 'followed'})
 
 class ProfileEditView(UserSpecificActionMixin, UpdateView):
@@ -100,3 +110,25 @@ class ProfileEditView(UserSpecificActionMixin, UpdateView):
         context['title'] = 'Comma | ویرایش پروفایل'
         context['active'] = 'profile'
         return context
+
+class ActivityView(LoginRequiredMixin, ListView):
+    model = Activity
+    template_name = 'account/activity.html'
+    context_object_name = 'activities'
+
+    def get_queryset(self):
+        return Activity.objects.filter(user=self.request.user)
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        Activity.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return response
+
+
+class GetNewActivitiesCountView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            count = Activity.objects.filter(user=request.user, is_read=False).count()
+            display_count = '99+' if count > 99 else str(count)
+            return JsonResponse({'count': display_count})
+        return JsonResponse({'count': '0'})

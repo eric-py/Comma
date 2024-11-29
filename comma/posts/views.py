@@ -14,6 +14,8 @@ from .forms import PostForm
 from extensions.mixins import UserSpecificActionMixin, PostVisibilityMixin
 from extensions.utils import create_comment_or_reply
 
+from account.models import Activity
+
 User = get_user_model()
 
 # Create your views here.
@@ -35,6 +37,7 @@ class PostListView(LoginRequiredMixin, ListView):
 class LikePostView(LoginRequiredMixin, View):
     def post(self, request, post_id):
         post = Post.objects.get(pk=post_id)
+        user = request.user
         if post:
             like, created = Like.objects.get_or_create(user=request.user, post=post)
             if not created:
@@ -42,6 +45,12 @@ class LikePostView(LoginRequiredMixin, View):
                 liked = False
             else:
                 liked = True
+                Activity.create_activity(
+                    user=post.user,
+                    activity_type='like',
+                    actor=user,
+                    post=post
+                )
         return JsonResponse({
             'status': 'success',
             'liked': liked,
@@ -151,6 +160,13 @@ class AddCommentView(LoginRequiredMixin, View):
         
         try:
             comment = create_comment_or_reply(post, request.user, content)
+            Activity.create_activity(
+                user=post.user,
+                activity_type='comment',
+                actor=request.user,
+                post=post,
+                comment=comment
+            )
         except ValidationError as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
         
@@ -175,6 +191,13 @@ class AddReplyView(LoginRequiredMixin, View):
         
         try:
             reply = create_comment_or_reply(post, request.user, content, parent_comment)
+            Activity.create_activity(
+                user=parent_comment.user,
+                activity_type='reply',
+                actor=request.user,
+                post=parent_comment.post,
+                comment=reply
+            )
         except ValidationError as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
         
@@ -197,6 +220,12 @@ class LikeCommentView(LoginRequiredMixin, View):
         else:
             comment.likes.add(user)
             liked = True
+            Activity.create_activity(
+                user=comment.user,
+                activity_type='comment_like',
+                actor=user,
+                comment=comment
+            )
 
         return JsonResponse({
             'status': 'success',

@@ -1,7 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
 from extensions.utils import validate_image, user_directory_path, convert_date_to_jalali
+
+from posts.models import Post, Comment
 
 from PIL import Image
 
@@ -75,3 +78,43 @@ class User(AbstractUser):
             
             img = img.resize((100, 100), Image.LANCZOS)
             img.save(self.profile_pics.path)
+
+class Activity(models.Model):
+    ACTIVITY_TYPES = (
+        ('follow', 'فالو'),
+        ('follow_request', 'درخواست فالو'),
+        ('like', 'لایک'),
+        ('comment_like', 'لایک کامنت'),
+        ('comment', 'کامنت'),
+        ('reply', 'ریپلای'),
+    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='activities', verbose_name='کاربر')
+    activity_type = models.CharField(max_length=20, choices=ACTIVITY_TYPES, verbose_name='نوع فعالیت')
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='actions', verbose_name='فعالیت کننده')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True, verbose_name='پست')
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, blank=True, verbose_name='کامنت')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ فعالیت'  )
+    is_read = models.BooleanField(default=False, verbose_name='خوانده شده'  )
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'فعالیت'
+        verbose_name_plural = 'فعالیت‌ها'
+
+    def __str__(self):
+        return f"{self.actor.username} {self.get_activity_type_display()} در {self.created_at}"
+
+    def jcreated_at(self):
+        return convert_date_to_jalali(self.created_at, time=True)
+    jcreated_at.short_description = 'تاریخ فعالیت'
+
+    @classmethod
+    def create_activity(cls, user, activity_type, actor, post=None, comment=None):
+        return cls.objects.create(
+            user=user,
+            activity_type=activity_type,
+            actor=actor,
+            post=post,
+            comment=comment
+        )
