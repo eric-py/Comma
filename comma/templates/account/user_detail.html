@@ -26,19 +26,27 @@
                             {% endwith %}
                         </div>
                         {% if request.user != profile_user %}
-                            <button id="followButton" 
-                                    data-username="{{ profile_user.username }}"
-                                    class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
-                                {% if is_following %}
-                                    آنفالو کردن
-                                {% elif is_requested %}
-                                    لغو درخواست
+                                {% if has_pending_request %}
+                                    <button id="followButton" data-action="accept" data-username="{{ profile_user.username }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
+                                        قبول درخواست
+                                    </button>
+                                {% elif is_following %}
+                                    <button id="followButton" data-action="unfollow" data-username="{{ profile_user.username }}" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
+                                        آنفالو کردن
+                                    </button>
+                                {% elif is_requested and profile_user.is_private %}
+                                    <button id="followButton" data-action="reject" data-username="{{ profile_user.username }}" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
+                                        لغو درخواست
+                                    </button>
                                 {% elif profile_user.is_private %}
-                                    درخواست فالو
+                                    <button id="followButton" data-action="sendrequest" data-username="{{ profile_user.username }}" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
+                                        درخواست فالو
+                                    </button>
                                 {% else %}
-                                    فالو کردن
+                                    <button id="followButton" data-action="follow" data-username="{{ profile_user.username }}" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
+                                        فالو کردن
+                                    </button>
                                 {% endif %}
-                            </button>
                         {% else %}
                             <a href="{% url 'account:profile_edit' username=profile_user %}" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 md:mt-10 rounded">
                                 ویرایش پروفایل

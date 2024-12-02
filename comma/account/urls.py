@@ -15,7 +15,10 @@ urlpatterns = [
     path('profile/<str:username>/', views.ProfileView.as_view(), name='profile'),
     path('profile/<str:username>/edit', views.ProfileEditView.as_view(), name='profile_edit'),
 
-    path('<str:username>/follow/', views.FollowToggleView.as_view(), name='follow'),
+    path('<str:username>/follow/', views.FollowView.as_view(), name='follow'),
+    path('<str:username>/unfollow/', views.UnfollowView.as_view(), name='unfollow'),
+    path('<str:username>/accept_request/', views.AcceptFollowRequestView.as_view(), name='accept_request'),
+    path('<str:username>/reject_request/', views.RejectFollowRequestView.as_view(), name='reject_request'),
     
     path('get-new-activities-count/', views.GetNewActivitiesCountView.as_view(), name='get_new_activities_count'),
 ]

@@ -3,7 +3,7 @@
         <a href="{% url 'posts:home' %}" class="text-2xl {% if active == 'home' %}text-pink-500 dark:text-pink-400{% else %}text-gray-700 dark:text-gray-300{% endif %}hover:text-pink-500 dark:hover:text-pink-400"><i class="fas fa-home"></i></a>
         <a href="{% url 'posts:search' %}" class="text-2xl {% if active == 'search' %}text-pink-500 dark:text-pink-400{% else %}text-gray-700 dark:text-gray-300{% endif %}hover:text-pink-500 dark:hover:text-pink-400"><i class="fas fa-search"></i></a>
         <a href="{% url 'posts:create' %}" class="text-2xl {% if active == 'create' %}text-pink-500 dark:text-pink-400{% else %}text-gray-700 dark:text-gray-300{% endif %}hover:text-pink-500 dark:hover:text-pink-400"><i class="fas fa-plus-square"></i></a>
-        <a href="#" class="text-2xl {% if active == 'activity' %}text-pink-500 dark:text-pink-400{% else %}text-gray-700 dark:text-gray-300{% endif %}hover:text-pink-500 dark:hover:text-pink-400"><i class="fas fa-heart"></i></a>
+        <a href="{% url 'account:activity' %}" class="text-2xl {% if active == 'activity' %}text-pink-500 dark:text-pink-400{% else %}text-gray-700 dark:text-gray-300{% endif %}hover:text-pink-500 dark:hover:text-pink-400"><i class="fas fa-heart"></i></a>
         <a href="{% url 'account:profile' username=request.user.username %}" class="text-2xl {% if active == 'profile' %}text-pink-500 dark:text-pink-400{% else %}text-gray-700 dark:text-gray-300{% endif %}hover:text-pink-500 dark:hover:text-pink-400"><i class="fas fa-user"></i></a>
     </div>
 </nav>

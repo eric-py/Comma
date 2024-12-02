@@ -50,51 +50,15 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         is_following = UserConnection.objects.filter(follower=self.request.user, following=self.object).exists()
         is_requested = FollowRequest.objects.filter(from_user=self.request.user, to_user=self.object).exists()
+        has_pending_request = FollowRequest.objects.filter(from_user=self.object, to_user=self.request.user).exists()
+        
         context['is_following'] = is_following
         context['is_requested'] = is_requested
+        context['has_pending_request'] = has_pending_request
         context['saved_posts'] = SavedPost.objects.saved_posts(self.object)
         context['title'] = f'Comma | پروفایل {self.object.username}'
         context['active'] = 'profile'
         return context
-
-class FollowToggleView(LoginRequiredMixin, View):
-    def post(self, request, username):
-        user_to_follow = get_object_or_404(User, username=username)
-        user = request.user
-
-        if user == user_to_follow:
-            return JsonResponse({'status': 'error', 'message': 'شما نمیتوانید خودتان را فالوو کنید.'})
-
-        follow_request = FollowRequest.objects.filter(from_user=user, to_user=user_to_follow).first()
-        connection = UserConnection.objects.filter(follower=user, following=user_to_follow).first()
-
-        if user_to_follow.is_private:
-            if follow_request:
-                follow_request.delete()
-                return JsonResponse({'status': 'success', 'action': 'request_cancelled'})
-            elif connection:
-                connection.delete()
-                return JsonResponse({'status': 'success', 'action': 'unfollowed'})
-            else:
-                FollowRequest.objects.create(from_user=user, to_user=user_to_follow)
-                Activity.create_activity(
-                    user=user_to_follow,
-                    activity_type='follow_request',
-                    actor=user
-                )
-                JsonResponse({'status': 'success', 'action': 'request_sent'})
-        else:
-            if connection:
-                connection.delete()
-                return JsonResponse({'status': 'success', 'action': 'unfollowed'})
-            else:
-                UserConnection.objects.create(follower=user, following=user_to_follow)
-                Activity.create_activity(
-                    user=user_to_follow,
-                    activity_type='follow',
-                    actor=user
-                )
-                return JsonResponse({'status': 'success', 'action': 'followed'})
 
 class ProfileEditView(UserSpecificActionMixin, UpdateView):
     model = User
@@ -124,7 +88,6 @@ class ActivityView(LoginRequiredMixin, ListView):
         Activity.objects.filter(user=request.user, is_read=False).update(is_read=True)
         return response
 
-
 class GetNewActivitiesCountView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -132,3 +95,49 @@ class GetNewActivitiesCountView(LoginRequiredMixin, View):
             display_count = '99+' if count > 99 else str(count)
             return JsonResponse({'count': display_count})
         return JsonResponse({'count': '0'})
+
+class FollowView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        user_to_follow = get_object_or_404(User, username=username)
+        if user_to_follow == request.user:
+            return JsonResponse({'status': 'error', 'message': 'شما نمیتوانید خودتان را فالو کنید.'})
+
+        if user_to_follow.is_private:
+            follow_request, created = FollowRequest.objects.get_or_create(from_user=request.user, to_user=user_to_follow)
+            if created:
+                Activity.create_activity(user=user_to_follow, activity_type='follow_request', actor=request.user)
+                return JsonResponse({'status': 'success', 'action': 'request_sent'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'درخواست فالو قبلاً ارسال شده است.'})
+        else:
+            connection, created = UserConnection.objects.get_or_create(follower=request.user, following=user_to_follow)
+            if created:
+                Activity.create_activity(user=user_to_follow, activity_type='follow', actor=request.user)
+                return JsonResponse({'status': 'success', 'action': 'followed'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'شما قبلاً این کاربر را فالو کرده‌اید.'})
+
+class UnfollowView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        user_to_unfollow = get_object_or_404(User, username=username)
+        UserConnection.objects.filter(follower=request.user, following=user_to_unfollow).delete()
+        return JsonResponse({'status': 'success', 'action': 'unfollowed'})
+
+class AcceptFollowRequestView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        user_to_accept = get_object_or_404(User, username=username)
+        follow_request = FollowRequest.objects.filter(from_user=user_to_accept, to_user=request.user).first()
+
+        if follow_request:
+            UserConnection.objects.create(follower=user_to_accept, following=request.user)
+            follow_request.delete()
+            return JsonResponse({'status': 'success', 'action': 'request_accepted'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'No follow request found.'})
+
+class RejectFollowRequestView(LoginRequiredMixin, View):
+    def post(self, request, username):
+        user_to_reject = get_object_or_404(User, username=username)
+        follow_request = FollowRequest.objects.get(from_user=request.user, to_user=user_to_reject)
+        follow_request.delete()
+        return JsonResponse({'status': 'success', 'action': 'request_cancelled'})

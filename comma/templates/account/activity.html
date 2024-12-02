@@ -21,43 +21,52 @@
                 </h3>
                 <div class="space-y-4">
                     {% for activity in activities %}
-                        <div class="flex items-center">
-                            <a href="{% url 'account:profile' username=activity.actor.username %}">
-                                <img src="{% if activity.actor.profile_pics %}{{ activity.actor.profile_pics.url }}{% else %}https://via.placeholder.com/40{% endif %}" alt="تصویر پروفایل" class="w-10 h-10 rounded-full mx-3">
-                            </a>
-                            <p class="">
-                                <span class="font-semibold"><a href="{% url 'account:profile' username=activity.actor.username %}">{{ activity.actor.username }}</a></span>
-                                {% if activity.activity_type == 'follow' %}
-                                    شما را دنبال کرد.
-                                {% elif activity.activity_type == 'follow_request' %}
-                                    میخواهد شما را دنبال کند.
-                                {% elif activity.activity_type == 'like' %}
-                                    {% if activity.post %}
-                                        <a href="{% url 'posts:post_detail' activity.post.id %}">پست شما را پسندید.</a>
-                                    {% else %}
-                                        پست شما را پسندید.
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <a href="{% url 'account:profile' username=activity.actor.username %}">
+                                    <img src="{% if activity.actor.profile_pics %}{{ activity.actor.profile_pics.url }}{% else %}https://via.placeholder.com/40{% endif %}" alt="تصویر پروفایل" class="w-10 h-10 rounded-full mx-3">
+                                </a>
+                                <p class="">
+                                    <span class="font-semibold"><a href="{% url 'account:profile' username=activity.actor.username %}">{{ activity.actor.username }}</a></span>
+                                    {% if activity.activity_type == 'follow' %}
+                                        شما را دنبال کرد.
+                                    {% elif activity.activity_type == 'follow_request' %}
+                                        میخواهد شما را دنبال کند.
+                                    {% elif activity.activity_type == 'like' %}
+                                        {% if activity.post %}
+                                            <a href="{% url 'posts:post_detail' activity.post.id %}">پست شما را پسندید.</a>
+                                        {% else %}
+                                            پست شما را پسندید.
+                                        {% endif %}
+                                    {% elif activity.activity_type == 'comment' %}
+                                        {% if activity.post %}
+                                            <a href="{% url 'posts:post_detail' activity.post.id %}">روی پست شما نظر داد.</a>
+                                        {% else %}
+                                            روی پست شما نظر داد.
+                                        {% endif %}
+                                    {% elif activity.activity_type == 'reply' %}
+                                        {% if activity.post %}
+                                            <a href="{% url 'posts:post_detail' activity.post.id %}">به نظر شما پاسخ داد.</a>
+                                        {% else %}
+                                            به نظر شما پاسخ داد.
+                                        {% endif %}
+                                    {% elif activity.activity_type == 'comment_like' %}
+                                        {% if activity.post %}
+                                            <a href="{% url 'posts:post_detail' activity.post.id %}">نظر شما را پسندید.</a>
+                                        {% else %}
+                                            نظر شما را پسندید.
+                                        {% endif %}
                                     {% endif %}
-                                {% elif activity.activity_type == 'comment' %}
-                                    {% if activity.post %}
-                                        <a href="{% url 'posts:post_detail' activity.post.id %}">روی پست شما نظر داد.</a>
-                                    {% else %}
-                                        روی پست شما نظر داد.
-                                    {% endif %}
-                                {% elif activity.activity_type == 'reply' %}
-                                    {% if activity.post %}
-                                        <a href="{% url 'posts:post_detail' activity.post.id %}">به نظر شما پاسخ داد.</a>
-                                    {% else %}
-                                        به نظر شما پاسخ داد.
-                                    {% endif %}
-                                {% elif activity.activity_type == 'comment_like' %}
-                                    {% if activity.post %}
-                                        <a href="{% url 'posts:post_detail' activity.post.id %}">نظر شما را پسندید.</a>
-                                    {% else %}
-                                        نظر شما را پسندید.
-                                    {% endif %}
+                                    <span class="text-gray-500 dark:text-gray-400 text-sm">{{ activity.created_at|timesince }} پیش</span>
+                                </p>
+                            </div>
+                            {% if activity.activity_type == 'follow' or activity.activity_type == 'follow_request' %}
+                                {% if not activity.actor in user.following.all %}
+                                    <a href="{% url 'account:profile' username=activity.actor.username %}" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-1 px-3 rounded text-sm">
+                                        مشاهده
+                                    </a>
                                 {% endif %}
-                                <span class="text-gray-500 dark:text-gray-400 text-sm">{{ activity.created_at|timesince }} پیش</span>
-                            </p>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
