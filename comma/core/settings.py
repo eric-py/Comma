@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
+import os, platform
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -147,8 +147,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Tailwind
 TAILWIND_APP_NAME = 'theme'
 INTERNAL_IPS = ["127.0.0.1",]
-NPM_BIN_PATH = r'C:\Program Files\nodejs\npm.cmd'
 TAILWIND_CSS_PATH = 'css/styles.css'
+if platform.system() == 'Windows':
+    NPM_BIN_PATH = r'C:\Program Files\nodejs\npm.cmd'
 
 # Media
 MEDIA_URL = '/media/'
