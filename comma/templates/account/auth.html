@@ -32,6 +32,11 @@
                         <p class="text-red-500 text-sm mt-1">{{ form.password.errors.0 }}</p>
                     {% endif %}
                 </div>
+                <div>
+                    <a href="{% url 'account:password_reset' %}" class="text-blue-700 text-sm">
+                        فراموشی رمز عبور ؟
+                    </a>
+                </div>
                 <button type="submit" class="w-full bg-pink-500 text-white py-2 rounded-md hover:bg-pink-600 transition duration-300">ورود</button>
             </form>
         {% endif %}

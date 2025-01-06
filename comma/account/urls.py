@@ -21,4 +21,10 @@ urlpatterns = [
     path('<str:username>/reject_request/', views.RejectFollowRequestView.as_view(), name='reject_request'),
     
     path('get-new-activities-count/', views.GetNewActivitiesCountView.as_view(), name='get_new_activities_count'),
+    
+    path('password_reset/', views.PasswordResetView.as_view(), name='password_reset'),
+    path('password_reset/done/', views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('password_reset/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
 ]

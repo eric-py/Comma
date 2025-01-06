@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.views import LoginView
 from django.views.generic import CreateView, DetailView, View, UpdateView, ListView
 from django.contrib.auth import get_user_model
@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
+from django.contrib.auth import views
 
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 from .models import UserConnection, FollowRequest, Activity
@@ -141,3 +142,35 @@ class RejectFollowRequestView(LoginRequiredMixin, View):
         follow_request = FollowRequest.objects.get(from_user=request.user, to_user=user_to_reject)
         follow_request.delete()
         return JsonResponse({'status': 'success', 'action': 'request_cancelled'})
+    
+class PasswordResetView(AnonymousRequiredMixin, views.PasswordResetView):
+    template_name = 'account/password_reset.html'
+    success_url = reverse_lazy('account:password_reset_done')
+    email_template_name = 'account/email/password_reset_email.html'
+    html_email_template_name = 'account/email/password_reset_email.html'
+    subject_template_name = 'account/email/password_reset_subject.txt'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Comma | تغییر رمز عبور'
+        return context
+
+class PasswordResetDoneView(AnonymousRequiredMixin, views.PasswordResetDoneView):
+    template_name = 'account/password_reset_done.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Comma | بازیابی رمز عبور'
+        return context
+
+class PasswordResetConfirmView(AnonymousRequiredMixin, views.PasswordResetConfirmView):
+    template_name = 'account/password_reset_confirm.html'
+    success_url = reverse_lazy('account:password_reset_complete')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Comma | تغییر رمز عبور'
+        return context
+
+class PasswordResetCompleteView(AnonymousRequiredMixin, views.PasswordResetCompleteView):
+    template_name = 'account/password_reset_complete.html'
