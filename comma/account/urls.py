@@ -14,6 +14,8 @@ urlpatterns = [
 
     path('profile/<str:username>/', views.ProfileView.as_view(), name='profile'),
     path('profile/<str:username>/edit', views.ProfileEditView.as_view(), name='profile_edit'),
+    path('profile/<str:username>/following/', views.FollowersView.as_view(), name='followers'),
+    path('profile/<str:username>/followers/', views.FollowingView.as_view(), name='following'),
 
     path('<str:username>/follow/', views.FollowView.as_view(), name='follow'),
     path('<str:username>/unfollow/', views.UnfollowView.as_view(), name='unfollow'),
@@ -26,5 +28,6 @@ urlpatterns = [
     path('password_reset/done/', views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('password_reset/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
 
 ]

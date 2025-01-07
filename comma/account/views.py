@@ -13,7 +13,7 @@ from .models import UserConnection, FollowRequest, Activity
 
 from posts.models import SavedPost
 
-from extensions.mixins import UserSpecificActionMixin, AnonymousRequiredMixin
+from extensions.mixins import UserSpecificActionMixin, AnonymousRequiredMixin, FollowListAccessMixin
 
 User = get_user_model()
 
@@ -174,3 +174,33 @@ class PasswordResetConfirmView(AnonymousRequiredMixin, views.PasswordResetConfir
 
 class PasswordResetCompleteView(AnonymousRequiredMixin, views.PasswordResetCompleteView):
     template_name = 'account/password_reset_complete.html'
+
+class FollowersView(LoginRequiredMixin, FollowListAccessMixin, ListView):
+    template_name = 'account/follower_list.html'
+    context_object_name = 'followers'
+
+    def get_queryset(self):
+        username = self.kwargs.get('username')
+        user = get_object_or_404(User, username=username)
+        return UserConnection.objects.filter(follower=user)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active'] = 'follower'
+        context['title'] = f'Comma | فالووینگ'
+        return context
+
+class FollowingView(LoginRequiredMixin, FollowListAccessMixin, ListView):
+    template_name = 'account/follower_list.html'
+    context_object_name = 'followers'
+
+    def get_queryset(self):
+        username = self.kwargs.get('username')
+        user = get_object_or_404(User, username=username)
+        return UserConnection.objects.filter(following=user)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Comma | فالوور'
+        context['active'] = 'following'
+        return context

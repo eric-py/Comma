@@ -20,8 +20,8 @@
                             {% with post_count=profile_user.posts.count followers_count=profile_user.followers.count following_count=profile_user.following.count %}
                                 <div class="flex gap-4 mb-4 justify-center md:justify-start">
                                     <span><strong>{{ post_count }}</strong> پست</span>
-                                    <span><strong>{{ followers_count }}</strong> فالوور</span>
-                                    <span><strong>{{ following_count }}</strong> فالووینگ</span>
+                                    <a href="{% url 'account:following' username=profile_user %}"><span><strong>{{ followers_count }}</strong> فالوور</span></a>
+                                    <a href="{% url 'account:followers' username=profile_user %}"><span><strong>{{ following_count }}</strong> فالووینگ</span></a>
                                 </div>
                             {% endwith %}
                         </div>

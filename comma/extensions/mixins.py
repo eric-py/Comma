@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
 from posts.models import Post
 
@@ -43,3 +44,19 @@ class PostVisibilityMixin(UserPassesTestMixin):
             return True
         
         return False
+    
+
+User = get_user_model()
+
+class FollowListAccessMixin(UserPassesTestMixin):
+    def test_func(self):
+        username = self.kwargs.get('username')
+        profile_user = get_object_or_404(User, username=username)
+        
+        if self.request.user == profile_user:
+            return True
+        
+        if not profile_user.is_private:
+            return True
+        
+        return profile_user.followers.filter(follower=self.request.user).exists()
