@@ -42,9 +42,9 @@
                         <button class="like-button text-2xl text-gray-700 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400" data-post-id="{{ post.id }}">
                             <i class="{% if is_liked %}fas text-pink-500{% else %}far{% endif %} fa-heart"></i>
                         </button>
-                        <button class="text-2xl text-gray-700 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400 send-button">
+                        <!-- <button class="text-2xl text-gray-700 dark:text-gray-300 hover:text-pink-500 dark:hover:text-pink-400 send-button">
                             <i class="far fa-paper-plane"></i>
-                        </button>
+                        </button> -->
                     </div>
                     <button class="save-button text-2xl text-gray-700 dark:text-gray-300 hover:text-cyan-500 dark:hover:text-cyan-500">
                         <i class="{% if is_saved %}fas text-cyan-400{% else %}far{% endif %} fa-bookmark"></i>
@@ -65,7 +65,7 @@
     </main>
 
     {% include 'partials/mobileMenu.html' %}
-    {% include 'partials/sendModal.html' %}
+    <!-- {% include 'partials/sendModal.html' %} -->
 
 {% endblock %}
 
